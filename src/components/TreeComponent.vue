@@ -26,11 +26,12 @@
 <!--      <a v-if="isLink" :href="items.target">Перейти</a>-->
 <!--    </div>-->
 
-    <ul class="child-nodes" v-show="isOpen" v-if="isFolder">
+    <ul class="child-nodes" v-if="isOpen && isFolder">
       <tree-component
           v-for="(child,i) in items.contents"
           :key="`${child.name}-${i}`"
           :items="child"
+          :bus="bus"
       />
     </ul>
   </li>
@@ -49,6 +50,10 @@ export default {
       type: Object,
       default: ()=>({})
     },
+    bus: {
+      type: Object,
+      default: ()=> ({}),
+    }
   },
   data: function() {
     return {
@@ -70,18 +75,55 @@ export default {
       return ['node', this.items.type, {
         'selected': this.isSelected,
       }]
-    }
+    },
   },
   methods: {
-    toggle: function() {
+    toggle: function(el) {
       if (this.isFolder) {
         this.isOpen = !this.isOpen;
+        this.getFullParentPath(el);
       }
     },
-    selected: function (event) {
+    selected: function (event, el) {
       event.preventDefault();
       this.isSelected = !this.isSelected;
-    }
+      this.getFullParentPath(el);
+    },
+    getFullParentPath: function (el){
+      const pathName = `${this.getParentPath(el)}/${this.items.name}`
+      this.bus.$emit('update-path', pathName);
+    },
+    getParentPath: function (currentElement) {
+      const parrentTreeArray = this.loopParents(currentElement, 'tree');
+      return parrentTreeArray
+          .reverse()
+          .map((element) => {
+            return element.firstChild.textContent.trim()
+            }
+          )
+          .join('/');
+    },
+    loopParents: function (el, parrentId) {
+      let node = el;
+      const arrayNodes = [];
+      while (node != null) {
+        node = node.parentNode;
+        if(node.classList.contains('child-nodes')){
+          const parentNode = node.previousElementSibling;
+          // console.log(parentNode.textContent)
+          if(parentNode.classList.contains('directory')){
+            arrayNodes.push(parentNode)
+          }
+        }
+        if(node === document.querySelector(`#${parrentId}`)){
+          break;
+        }
+      }
+      // console.log('click', arrayNodes);
+      return arrayNodes;
+    },
+  },
+  mounted() {
   }
 }
 </script>

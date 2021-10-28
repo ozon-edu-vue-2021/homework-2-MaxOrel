@@ -1,5 +1,5 @@
 <template>
-  <a :class="classNode" :href="target" @click="$emit('selected-file', $event)" >
+  <a ref="node" :class="classNode" :href="target" @click="$emit('selected-file', $event, $refs.node)" >
     {{item.name}}
   </a>
 </template>

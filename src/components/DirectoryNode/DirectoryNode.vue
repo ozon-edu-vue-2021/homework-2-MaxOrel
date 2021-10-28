@@ -1,5 +1,5 @@
 <template>
-  <div :class="classNode" @click="$emit('open-folder')">
+  <div ref="node" :class="classNode" @click="$emit('open-folder', $refs.node )">
     {{item.name}}
     <span v-if="isFolder">[{{ isOpen ? '-' : '+' }}]</span>
   </div>
