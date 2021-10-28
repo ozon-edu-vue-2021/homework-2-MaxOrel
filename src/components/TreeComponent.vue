@@ -42,6 +42,7 @@
 import DirectoryNode from "./DirectoryNode/DirectoryNode";
 import FileNode from "./FileNode/FileNode";
 import LinkNode from "./LinkNode/LinkNode";
+import {CLASS_CHILD_NODE, CLASS_PARENT_NODE, CLASS_ROOT_TREE} from "../constans";
 export default {
   name: "TreeComponent",
   components: {LinkNode, FileNode, DirectoryNode},
@@ -94,7 +95,7 @@ export default {
       this.bus.$emit('update-path', pathName);
     },
     getParentPath: function (currentElement) {
-      const parrentTreeArray = this.loopParents(currentElement, 'tree');
+      const parrentTreeArray = this.loopParents(currentElement, CLASS_ROOT_TREE);
       return parrentTreeArray
           .reverse()
           .map((element) => {
@@ -108,10 +109,10 @@ export default {
       const arrayNodes = [];
       while (node != null) {
         node = node.parentNode;
-        if(node.classList.contains('child-nodes')){
+        if(node.classList.contains(CLASS_CHILD_NODE)){
           const parentNode = node.previousElementSibling;
           // console.log(parentNode.textContent)
-          if(parentNode.classList.contains('directory')){
+          if(parentNode.classList.contains(CLASS_PARENT_NODE)){
             arrayNodes.push(parentNode)
           }
         }
