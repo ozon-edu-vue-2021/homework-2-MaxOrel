@@ -3,7 +3,7 @@
     <div>Путь к выбранному файлу/папке: {{path}}</div>
     <ul class="tree" id="tree">
       <tree-component
-          :items="json" :bus="bus"
+          :items="json" @bubble-path="handleUpdatePath"
       />
     </ul>
 
@@ -13,7 +13,6 @@
 <script>
 import data from '../public/static/node_modules.json'
 import TreeComponent from "./components/TreeComponent";
-import Vue from "vue";
 
 export default {
   name: 'App',
@@ -22,14 +21,13 @@ export default {
     return {
       json: data,
       path: '',
-      bus: new Vue(),
     }
   },
-  created() {
-    this.bus.$on('update-path', (pathName) => {
-      this.path = pathName;
-    });
-  },
+  methods: {
+    handleUpdatePath: function (data) {
+      this.path = data;
+    }
+  }
 }
 </script>
 

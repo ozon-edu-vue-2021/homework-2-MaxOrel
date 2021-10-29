@@ -20,18 +20,12 @@
       :is-selected="isSelected"
       @selected-file="selected"
     />
-<!--    <div :class="classNode" :href="items.type" @click="toggle">-->
-<!--      {{items.name}}-->
-<!--      <span v-if="isFolder">[{{ isOpen ? '-' : '+' }}]</span>-->
-<!--      <a v-if="isLink" :href="items.target">Перейти</a>-->
-<!--    </div>-->
-
     <ul class="child-nodes" v-if="isOpen && isFolder">
       <tree-component
           v-for="(child,i) in items.contents"
           :key="`${child.name}-${i}`"
           :items="child"
-          :bus="bus"
+          @bubble-path="handleUpdatePath"
       />
     </ul>
   </li>
@@ -45,16 +39,12 @@ import LinkNode from "./LinkNode/LinkNode";
 import {CLASS_CHILD_NODE, CLASS_PARENT_NODE, CLASS_ROOT_TREE} from "../constans";
 export default {
   name: "TreeComponent",
-  components: {LinkNode, FileNode, DirectoryNode},
+  components: { FileNode, LinkNode, DirectoryNode},
   props: {
     items: {
       type: Object,
       default: ()=>({})
     },
-    bus: {
-      type: Object,
-      default: ()=> ({}),
-    }
   },
   data: function() {
     return {
@@ -85,21 +75,25 @@ export default {
         this.getFullParentPath(el);
       }
     },
+    handleUpdatePath: function (data) {
+      this.$emit('bubble-path', data)
+    },
     selected: function (event, el) {
       event.preventDefault();
       this.isSelected = !this.isSelected;
       this.getFullParentPath(el);
     },
     getFullParentPath: function (el){
+      console.log(el)
       const pathName = `${this.getParentPath(el)}/${this.items.name}`
-      this.bus.$emit('update-path', pathName);
+      this.$emit('bubble-path', pathName);
     },
     getParentPath: function (currentElement) {
       const parrentTreeArray = this.loopParents(currentElement, CLASS_ROOT_TREE);
       return parrentTreeArray
           .reverse()
           .map((element) => {
-            return element.firstChild.textContent.trim()
+            return element.textContent.trim()
             }
           )
           .join('/');
@@ -120,7 +114,6 @@ export default {
           break;
         }
       }
-      // console.log('click', arrayNodes);
       return arrayNodes;
     },
   },
@@ -130,6 +123,11 @@ export default {
 </script>
 
 <style scoped>
+.node {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
 .node.selected {
   font-weight: bold;
 }
