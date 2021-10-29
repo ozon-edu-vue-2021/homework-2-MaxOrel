@@ -1,8 +1,8 @@
 <template>
   <div
       ref="node"
-      :class="classNode"
-      @click="clickEvent($event, $refs.node)"
+      :class="classes"
+      @click.stop="clickEvent($event, $refs.node)"
       @keyup.enter="clickEvent($event, $refs.node)"
       @keyup.prevent.space="clickEvent($event, $refs.node)"
       tabindex="0">
@@ -17,17 +17,24 @@ export default {
   name: "FileNode",
   props: {
     classNode: {
-      type: String,
-      default: "",
+      type: Array,
+      default: ()=>([]),
     },
     item: {
       type: Object,
       default: ()=>({})
+    },
+    activeElement: HTMLDivElement,
+  },
+  computed: {
+    classes: function () {
+      return [this.$refs.node === this.activeElement ? 'selected' : '', ...this.classNode]
     }
   },
   methods: {
     clickEvent: function(event, node) {
-      this.$emit('selected-file',event, node)
+      this.$emit('selected-file', { event, node })
+      this.$emit('bubble-path', {node: this.$refs.node, name: this.item.name});
     },
   }
 }
