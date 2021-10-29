@@ -30,7 +30,8 @@ export default {
   },
   methods: {
     clickEvent: function(event, node) {
-      this.$emit('selected-file',event, node)
+      this.$emit('selected-file',event, node);
+      this.$emit('bubble-path', {node: this.$refs.node, name: this.item.name});
     },
   }
 }

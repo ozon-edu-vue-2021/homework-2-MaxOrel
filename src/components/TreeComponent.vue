@@ -6,12 +6,17 @@
       :is-folder="isFolder"
       :is-open = "isOpen"
       @open-folder="toggle"
+      @bubble-path="handleUpdatePath"
+      @active-element-picked="handlePickedElement"
     />
     <file-node v-if="items.type === 'file'"
       :class="classNode"
       :item="items"
       :is-selected="isSelected"
       @selected-file="selected"
+      @bubble-path="handleUpdatePath"
+      :activeElement = "activeElement"
+      @active-element-picked="handlePickedElement"
     />
     <link-node v-if="items.type === 'link'"
       :class="classNode"
@@ -19,6 +24,8 @@
       :href="getLink"
       :is-selected="isSelected"
       @selected-file="selected"
+      @bubble-path="handleUpdatePath"
+      @active-element-picked="handlePickedElement"
     />
     <ul class="child-nodes" v-if="isOpen && isFolder">
       <tree-component
@@ -26,6 +33,8 @@
           :key="`${child.name}-${i}`"
           :items="child"
           @bubble-path="handleUpdatePath"
+          :activeElement = "activeElement"
+          @active-element-picked="handlePickedElement"
       />
     </ul>
   </li>
@@ -36,15 +45,16 @@
 import DirectoryNode from "./DirectoryNode/DirectoryNode";
 import FileNode from "./FileNode/FileNode";
 import LinkNode from "./LinkNode/LinkNode";
-import {CLASS_CHILD_NODE, CLASS_PARENT_NODE, CLASS_ROOT_TREE} from "../constans";
 export default {
   name: "TreeComponent",
-  components: { FileNode, LinkNode, DirectoryNode},
+  components: {FileNode,LinkNode, DirectoryNode},
   props: {
     items: {
       type: Object,
       default: ()=>({})
     },
+    activeElement: HTMLDivElement,
+    default: ()=>({})
   },
   data: function() {
     return {
@@ -64,61 +74,34 @@ export default {
     },
     classNode: function () {
       return ['node', this.items.type, {
-        'selected': this.isSelected,
+        // 'selected': this.isSelected,
       }]
     },
+
   },
   methods: {
-    toggle: function(el) {
+    toggle: function() {
       if (this.isFolder) {
         this.isOpen = !this.isOpen;
-        this.getFullParentPath(el);
       }
     },
     handleUpdatePath: function (data) {
       this.$emit('bubble-path', data)
     },
-    selected: function (event, el) {
+    selected: function ({ event, node}) {
       event.preventDefault();
-      this.isSelected = !this.isSelected;
-      this.getFullParentPath(el);
+      // this.activeElement = node;
+      // this.isSelected = !this.isSelected;
+
+      this.$emit('active-element-picked', { event, node });
     },
-    getFullParentPath: function (el){
-      console.log(el)
-      const pathName = `${this.getParentPath(el)}/${this.items.name}`
-      this.$emit('bubble-path', pathName);
-    },
-    getParentPath: function (currentElement) {
-      const parrentTreeArray = this.loopParents(currentElement, CLASS_ROOT_TREE);
-      return parrentTreeArray
-          .reverse()
-          .map((element) => {
-            return element.textContent.trim()
-            }
-          )
-          .join('/');
-    },
-    loopParents: function (el, parrentId) {
-      let node = el;
-      const arrayNodes = [];
-      while (node != null) {
-        node = node.parentNode;
-        if(node.classList.contains(CLASS_CHILD_NODE)){
-          const parentNode = node.previousElementSibling;
-          // console.log(parentNode.textContent)
-          if(parentNode.classList.contains(CLASS_PARENT_NODE)){
-            arrayNodes.push(parentNode)
-          }
-        }
-        if(node === document.querySelector(`#${parrentId}`)){
-          break;
-        }
-      }
-      return arrayNodes;
-    },
+
+    handlePickedElement ({ event, node }) {
+      // this.activeElement = node;
+
+      this.$emit('active-element-picked', { event, node });
+    }
   },
-  mounted() {
-  }
 }
 </script>
 
